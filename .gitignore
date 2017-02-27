@@ -13,6 +13,9 @@ hs_err_pid*
 
 # Python #
 __pycache__
-Python/ProcBridge/.idea/workspace.xml
 
+# IDEA #
+Python/ProcBridge/.idea/workspace.xml
 Python/ProcBridge/.idea/misc.xml
+Java/ProcBridge/.idea/workspace.xml
+Java/ProcBridge/.idea/vcs.xml
