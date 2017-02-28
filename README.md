@@ -1,2 +1,5 @@
-# proc-bridge
-A lightweight socket-based IPC (Inter-Process Communication) protocol. (Support Java and Python)
+# 1. Introduction
+
+**ProcBridge** is a lightweight socket-based IPC (*Inter-Process Communication*) protocol.
+
+![Protocol Design](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Protocol.png)
