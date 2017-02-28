@@ -99,8 +99,8 @@ System.out.println(resp); // prints "{result: 15}"
 
 # 4. Repository Content
 
-- 'Java/ProcBridge': Java implementation and examples, can be imported in IntelliJ IDEA.
-- 'Python/ProcBridge': Python implementation and examples, can be imported in PyCharm.
+- `Java/ProcBridge`: Java implementation and examples, can be imported in IntelliJ IDEA.
+- `Python/ProcBridge`: Python implementation and examples, can be imported in PyCharm.
 
 # 5. Contacts
 
