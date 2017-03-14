@@ -1,4 +1,5 @@
-from procbridge import ProcBridgeServer
+import procbridge
+# from procbridge import procbridge
 import sys
 
 
@@ -20,7 +21,7 @@ if __name__ == '__main__':
             raise Exception('unknown api')
 
     # start socket server
-    server = ProcBridgeServer(host, port, request_handler)
+    server = procbridge.ProcBridgeServer(host, port, request_handler)
     server.start()
     print('listening...')
 
