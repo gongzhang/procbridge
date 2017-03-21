@@ -1,5 +1,3 @@
-package co.gongzh.procbridge.samples;
-
 import co.gongzh.procbridge.APIHandler;
 import co.gongzh.procbridge.ProcBridgeServer;
 import org.json.JSONArray;
@@ -13,7 +11,7 @@ import java.util.Locale;
 /**
  * @author Gong Zhang
  */
-public class SampleServer {
+public class Server {
 
     public static void main(String[] args) {
 

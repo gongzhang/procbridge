@@ -1,5 +1,3 @@
-package co.gongzh.procbridge.samples;
-
 import co.gongzh.procbridge.ProcBridge;
 import co.gongzh.procbridge.ProcBridgeException;
 import org.json.JSONObject;
@@ -7,7 +5,7 @@ import org.json.JSONObject;
 /**
  * @author Gong Zhang
  */
-public class SampleClient {
+public class Client {
 
     public static void main(String[] args) {
 

@@ -1,10 +1,11 @@
-from procbridge import ProcBridge
+import procbridge
+# from procbridge import procbridge
 
 
 host = '127.0.0.1'
 port = 8077
 
-client = ProcBridge(host, port)
+client = procbridge.ProcBridge(host, port)
 
 print(client.request('echo', {}))
 

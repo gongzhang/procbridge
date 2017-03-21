@@ -10,11 +10,23 @@ hs_err_pid*
 __pycache__
 
 # IDEA #
+
 Python/ProcBridge/.idea/workspace.xml
 Python/ProcBridge/.idea/misc.xml
 Python/ProcBridge/.idea/vcs.xml
+Python/ProcBridge/.idea/dictionaries
+Python/ProcBridge/dist/
+
 Java/ProcBridge/.idea/workspace.xml
 Java/ProcBridge/.idea/vcs.xml
 Java/ProcBridge/.idea/uiDesigner.xml
 Java/ProcBridge/.idea/dictionaries
-Java/ProcBridge/out/
+Java/ProcBridge/.idea/misc.xml
+Java/ProcBridge/.idea/libraries
+Java/ProcBridge/target/
+
+Java/Example/.idea/workspace.xml
+Java/Example/.idea/vcs.xml
+Java/Example/.idea/uiDesigner.xml
+
+

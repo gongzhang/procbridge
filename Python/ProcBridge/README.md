@@ -1,0 +1,1 @@
+ProcBridge is a lightweight socket-based IPC (Inter-Process Communication) protocol, and it uses UTF-8 JSON text to encodes requests and responses. Currently we have Java and Python implementations for ProcBridge.
