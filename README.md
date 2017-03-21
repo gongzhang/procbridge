@@ -8,7 +8,7 @@ ProcBridge is based on **Request-Response** model. Server provides a group of AP
 
 ![Intro](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Intro.png)
 
-The *next version* of ProcBridge will also support **Event** model, which unifies the communication code between server side and client side.
+The *next version* of ProcBridge will also support **Event-Based** model, which unifies the communication code between server side and client side.
 
 #### Versions
 
@@ -61,27 +61,13 @@ pip install procbridge
 
 > The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
 
-
-# 3. Development Plan
-
-# 4. Protocol Design
-
-![Protocol Design](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Protocol.png)
-
-- **FLAG** (2 bytes): two fixed ASCII charactors `'p'` and `'b'` in lowercase
-- **VERSION** (2 bytes): `0x1` and `0x0` indicate the major/minor version of the protocol
-- **STATUS CODE** (1 bytes): a flag that indicates the body is a request or response
-- **RESERVED BYTES** (2 bytes)
-- **BODY LENGTH** (4 bytes): an unsigned little-endian integer
-- **BODY**: an UTF-8 encoded JSON text, always an JSON object `{ ... }`.
-
-# 5. Examples
+# 3. Examples
 
 With ProcBridge, clients can send high-level requests to server. Each request has two parts: an **API name** and an optional **JSON body**. The **API name** is any non-empty string that defined on server-side. The **JSON body** can by any valid JSON. The server will handle the request and send response back to clients, which is also an arbitrary JSON object.
 
 In the following examples, the server defines two APIs. One is `echo`, which directly send back the JSON object sent from client. The other is `add`, which sums up a group of integers and send the result back to client.
 
-## 5.1 Python Example
+## 3.1 Python Example
 
 - Server
 ```python
@@ -114,7 +100,7 @@ print(client.request('add', {      # prints "{result: 15}"
 }))
 ```
 
-## 5.2 Java Example
+## 3.2 Java Example
 
 - Server
 ```java
@@ -159,12 +145,23 @@ resp = pb.request("add", "{elements: [1, 2, 3, 4, 5]}");
 System.out.println(resp); // prints "{result: 15}"
 ```
 
-# 6. Repository Content
+# 4. Development Plan
 
-- `Java/ProcBridge`: Java implementation and examples, can be imported in IntelliJ IDEA.
-- `Python/ProcBridge`: Python implementation and examples, can be imported in PyCharm.
+> Add later.
 
-# 7. Contacts
+# 5. Protocol Design
+
+![Protocol Design](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Protocol.png)
+
+- **FLAG** (2 bytes): two fixed ASCII charactors `'p'` and `'b'` in lowercase
+- **VERSION** (2 bytes): `0x1` and `0x0` indicate the major/minor version of the protocol
+- **STATUS CODE** (1 bytes): a flag that indicates the body is a request or response
+- **RESERVED BYTES** (2 bytes)
+- **BODY LENGTH** (4 bytes): an unsigned little-endian integer
+- **BODY**: an UTF-8 encoded JSON text, always an JSON object `{ ... }`.
+
+
+# 6. Contacts
 
 Feel free to open issues or contact me:
 
