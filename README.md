@@ -6,7 +6,52 @@ The following diagram uses pseudocode to give you a general idea about how ProcB
 
 ![Intro](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Intro.png)
 
-# 2. Protocol Design
+#### Compatibility Note
+The Java implementation supports Java 8+, and the Python implementation only supports Python 3.x.
+
+# 2. Download
+
+## 2.1 Java
+
+#### Maven
+
+```xml
+<dependency>
+    <groupId>co.gongzh.procbridge</groupId>
+    <artifactId>procbridge</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
+#### Gradle
+
+```gradle
+compile 'co.gongzh.procbridge:procbridge:1.0'
+```
+
+#### Standalone Jar
+
+Please go to [releases](https://github.com/gongzhang/proc-bridge/releases) page.
+
+#### Download & Compile Source Code
+
+The `Java/ProcBrdige` directory is a *IntelliJ IDEA* project. You can import it in latest version of *IntelliJ IDEA* IDE and compile it using **JDK 8** or higher version.
+
+## 2.2 Python
+
+#### pip
+```
+pip install procbridge
+```
+
+#### Download & Compile Source Code
+
+The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
+
+
+# 3. Development Roadmap
+
+# 4. Protocol Design
 
 ![Protocol Design](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Protocol.png)
 
@@ -17,13 +62,13 @@ The following diagram uses pseudocode to give you a general idea about how ProcB
 - **BODY LENGTH** (4 bytes): an unsigned little-endian integer
 - **BODY**: an UTF-8 encoded JSON text, always an JSON object `{ ... }`.
 
-# 3. Usage
+# 5. Examples
 
 With ProcBridge, clients can send high-level requests to server. Each request has two parts: an **API name** and an optional **JSON body**. The **API name** is any non-empty string that defined on server-side. The **JSON body** can by any valid JSON. The server will handle the request and send response back to clients, which is also an arbitrary JSON object.
 
 In the following examples, the server defines two APIs. One is `echo`, which directly send back the JSON object sent from client. The other is `add`, which sums up a group of integers and send the result back to client.
 
-## 3.1 Python Example
+## 5.1 Python Example
 
 - Server
 ```python
@@ -56,7 +101,7 @@ print(client.request('add', {      # prints "{result: 15}"
 }))
 ```
 
-## 3.2 Java Example
+## 5.2 Java Example
 
 - Server
 ```java
@@ -101,12 +146,12 @@ resp = pb.request("add", "{elements: [1, 2, 3, 4, 5]}");
 System.out.println(resp); // prints "{result: 15}"
 ```
 
-# 4. Repository Content
+# 6. Repository Content
 
 - `Java/ProcBridge`: Java implementation and examples, can be imported in IntelliJ IDEA.
 - `Python/ProcBridge`: Python implementation and examples, can be imported in PyCharm.
 
-# 5. Contacts
+# 7. Contacts
 
 Feel free to open issues or contact me:
 
