@@ -25,7 +25,7 @@ If you need to use ProcBridge on an earlier version runtime, feel free to open a
 
 ## 2.1 Java
 
-### Maven
+#### Maven
 
 ```xml
 <dependency>
@@ -35,29 +35,29 @@ If you need to use ProcBridge on an earlier version runtime, feel free to open a
 </dependency>
 ```
 
-### Gradle
+#### Gradle
 
 ```gradle
 compile 'co.gongzh.procbridge:procbridge:1.0'
 ```
 
-### Jar
+#### Jar
 
 > You can download jars on [releases](https://github.com/gongzhang/proc-bridge/releases) page.
 
-### Source Code
+#### Source Code
 
 > The `Java/ProcBrdige` directory is a *IntelliJ IDEA* project. You can import it in latest version of *IntelliJ IDEA* IDE and compile it using **JDK 8** or higher version.
 
 ## 2.2 Python
 
-### PyPI (pip)
+#### PyPI (pip)
 
 ```
 pip install procbridge
 ```
 
-### Source Code
+#### Source Code
 
 > The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
 
