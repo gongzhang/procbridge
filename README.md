@@ -1,16 +1,25 @@
 # 1. Introduction
 
-**ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol. The goal is to provide an **consistency** and **convenient** way for developers to implement inter-process applications. Currently we have **Java** and **Python** implementations for ProcBridge, and more languages will be supported in the future.
+**ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol. The goal is to provide an **consistency** and **convenient** way for developers to implement inter-process applications. Currently we have **Java** and **Python** implementations. More languages will be supported in the future.
 
-ProcBridge is based on **Request-Response** model, which is very easy to understand and maintain. Arbituray **JSON** objects can be sent between server and clients, even in different languages.
+#### Communication Model
 
-The *next version* of ProcBridge will also support **Event** model, which unifies the code between server side and client side.
-
-The following diagram uses pseudocode to give you a general idea about how ProcBridge works.
+ProcBridge is based on **Request-Response** model. Server provides a group of APIs and clients send requests to them. All the communications use arbituray **JSON** objects to carry higher-level data. The following diagram uses pseudocode to give you a general idea about how ProcBridge works.
 
 ![Intro](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Intro.png)
 
-The Java implementation supports Java 8+, and the Python implementation supports Python 3.x. If you want to use ProcBridge on earlier version of the runtime environment, please open an issue or folk my repo.
+The *next version* of ProcBridge will also support **Event** model, which unifies the communication code between server side and client side.
+
+#### Versions
+
+- 1.0 (latest release)
+
+#### Compatibility Notes
+
+- **Java**: 8+
+- **Python**: 3.5+
+
+If you need to use ProcBridge on an earlier version runtime, feel free to open an issue or folk my repo.
 
 # 2. Download
 
@@ -32,11 +41,11 @@ The Java implementation supports Java 8+, and the Python implementation supports
 compile 'co.gongzh.procbridge:procbridge:1.0'
 ```
 
-### Standalone Jar
+### Jar
 
 > You can download jars on [releases](https://github.com/gongzhang/proc-bridge/releases) page.
 
-### Download & Compile Source Code
+### Source Code
 
 > The `Java/ProcBrdige` directory is a *IntelliJ IDEA* project. You can import it in latest version of *IntelliJ IDEA* IDE and compile it using **JDK 8** or higher version.
 
@@ -48,12 +57,12 @@ compile 'co.gongzh.procbridge:procbridge:1.0'
 pip install procbridge
 ```
 
-### Download & Compile Source Code
+### Source Code
 
 > The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
 
 
-# 3. Development Roadmap
+# 3. Development Plan
 
 # 4. Protocol Design
 
