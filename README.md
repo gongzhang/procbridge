@@ -1,19 +1,22 @@
 # 1. Introduction
 
-**ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol, and it uses UTF-8 **JSON** text to encodes requests and responses. Currently we have **Java** and **Python** implementations for ProcBridge.
+**ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol. The goal is to provide an **consistency** and **convenient** way for developers to implement inter-process applications. Currently we have **Java** and **Python** implementations for ProcBridge, and more languages will be supported in the future.
+
+ProcBridge is based on **Request-Response** model, which is very easy to understand and maintain. Arbituray **JSON** objects can be sent between server and clients, even in different languages.
+
+The *next version* of ProcBridge will also support **Event** model, which unifies the code between server side and client side.
 
 The following diagram uses pseudocode to give you a general idea about how ProcBridge works.
 
 ![Intro](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Intro.png)
 
-#### Compatibility Note
-The Java implementation supports Java 8+, and the Python implementation only supports Python 3.x.
+The Java implementation supports Java 8+, and the Python implementation supports Python 3.x. If you want to use ProcBridge on earlier version of the runtime environment, please open an issue or folk my repo.
 
 # 2. Download
 
 ## 2.1 Java
 
-#### Maven
+### Maven
 
 ```xml
 <dependency>
@@ -23,30 +26,31 @@ The Java implementation supports Java 8+, and the Python implementation only sup
 </dependency>
 ```
 
-#### Gradle
+### Gradle
 
 ```gradle
 compile 'co.gongzh.procbridge:procbridge:1.0'
 ```
 
-#### Standalone Jar
+### Standalone Jar
 
-Please go to [releases](https://github.com/gongzhang/proc-bridge/releases) page.
+> You can download jars on [releases](https://github.com/gongzhang/proc-bridge/releases) page.
 
-#### Download & Compile Source Code
+### Download & Compile Source Code
 
-The `Java/ProcBrdige` directory is a *IntelliJ IDEA* project. You can import it in latest version of *IntelliJ IDEA* IDE and compile it using **JDK 8** or higher version.
+> The `Java/ProcBrdige` directory is a *IntelliJ IDEA* project. You can import it in latest version of *IntelliJ IDEA* IDE and compile it using **JDK 8** or higher version.
 
 ## 2.2 Python
 
-#### pip
+### PyPI (pip)
+
 ```
 pip install procbridge
 ```
 
-#### Download & Compile Source Code
+### Download & Compile Source Code
 
-The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
+> The `Python/ProcBrdige` directory is a *PyCharm* project. You can import it in latest version of *PyCharm Community* IDE and compile it using **Python 3.5** or higher version.
 
 
 # 3. Development Roadmap
