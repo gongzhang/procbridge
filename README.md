@@ -4,9 +4,9 @@
 
 #### Communication Model
 
-ProcBridge is based on **Request-Response** model. Server provides a group of APIs and clients send requests to them. All the communications use arbituray **JSON** objects to carry higher-level data. The following diagram uses pseudocode to give you a general idea about how ProcBridge works.
+ProcBridge is based on **Request-Response** model. Server provides a group of APIs and clients send requests to them. All the communications use arbitrary **JSON** objects to carry higher-level data. The following diagram uses pseudocode to give you a general idea about how ProcBridge works.
 
-![Intro](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Intro.png)
+<img src="./Resources/Intro.png" width="800">
 
 The *next version* of ProcBridge will also support **Event-Based** model, which unifies the communication code between server side and client side.
 
@@ -112,7 +112,7 @@ ProcBridgeServer server = new ProcBridgeServer(port, timeout, new Object() {
     @APIHandler JSONObject echo(JSONObject arg) {
         return arg;
     }
-    
+
     @APIHandler JSONObject add(JSONObject arg) {
         JSONArray elements = arg.getJSONArray("elements");
         int sum = 0;
@@ -123,7 +123,7 @@ ProcBridgeServer server = new ProcBridgeServer(port, timeout, new Object() {
         result.put("result", sum);
         return result;
     }
-    
+
 });
 
 server.start();
@@ -151,7 +151,7 @@ System.out.println(resp); // prints "{result: 15}"
 
 # 5. Protocol Design
 
-![Protocol Design](https://github.com/gongzhang/proc-bridge/blob/master/Resources/Protocol.png)
+<img src="./Resources/Protocol.png" width="600">
 
 - **FLAG** (2 bytes): two fixed ASCII charactors `'p'` and `'b'` in lowercase
 - **VERSION** (2 bytes): `0x1` and `0x0` indicate the major/minor version of the protocol
@@ -166,4 +166,3 @@ System.out.println(resp); // prints "{result: 15}"
 Feel free to open issues or contact me:
 
 - Gong Zhang (gong@me.com)
-
