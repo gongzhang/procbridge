@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
   name='procbridge',
   packages=['procbridge'],
-  version='1.0',
+  version='1.0.1',
   description='A lightweight socket-based IPC (Inter-Process Communication) protocol.',
   author='Gong Zhang',
   author_email='zhanggong@me.com',
