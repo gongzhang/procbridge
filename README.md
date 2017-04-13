@@ -10,9 +10,10 @@ ProcBridge is based on **Request-Response** model. Server provides a group of AP
 
 The *next version* of ProcBridge will also support **Event-Based** model, which unifies the communication code between server side and client side.
 
-#### Versions
+#### Latest Version
 
-- 1.0 (latest release)
+- **Java**: 1.0
+- **Python**: 1.0.1
 
 #### Compatibility Notes
 
