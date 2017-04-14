@@ -195,20 +195,20 @@ class ProcBridgeServer:
 
 
 def _start_server_listener(server: ProcBridgeServer):
-    while True:
-        server.lock.acquire()
-        try:
+    try:
+        while True:
+            server.lock.acquire()
             if not server.started:
                 return
-        except:
-            return
-        finally:
             server.lock.release()
 
-        # assert started == true:
-        conn, _ = server.socket.accept()
-        t = threading.Thread(target=_start_connection, args=(server, conn,), daemon=True)
-        t.start()
+            # assert started == true:
+            conn, _ = server.socket.accept()
+            t = threading.Thread(target=_start_connection, args=(server, conn,), daemon=True)
+            t.start()
+    except ConnectionAbortedError:
+        # socket stopped
+        pass
 
 
 def _start_connection(server: ProcBridgeServer, s: socket.socket):
@@ -222,6 +222,6 @@ def _start_connection(server: ProcBridgeServer, s: socket.socket):
         except Exception as ex:
             _write_bad_response(s, str(ex))
     except:
-        return
+        pass
     finally:
         s.close()
