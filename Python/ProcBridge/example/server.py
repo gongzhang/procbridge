@@ -25,9 +25,12 @@ if __name__ == '__main__':
     server.start()
     print('listening...')
 
-    for line in sys.stdin:
-        if line.strip() == 'exit':
-            break
+    try:
+        for line in sys.stdin:
+            if line.strip() == 'exit':
+                break
+    except KeyboardInterrupt:
+        pass
 
     server.stop()
     print('bye!')
