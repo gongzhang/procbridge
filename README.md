@@ -13,7 +13,7 @@ The *next version* of ProcBridge will also support **Event-Based** model, which 
 #### Latest Version
 
 - **Java**: 1.0
-- **Python**: 1.0.1
+- **Python**: 1.0.2
 
 #### Compatibility Notes
 
