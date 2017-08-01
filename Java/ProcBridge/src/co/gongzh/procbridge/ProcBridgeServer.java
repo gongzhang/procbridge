@@ -151,7 +151,7 @@ public final class ProcBridgeServer {
                             JSONObject reply = delegate.handleRequest(api, body);
                             encoder = new GoodResponseEncoder(reply);
                         } catch (Exception ex) {
-                            encoder = new BadResponseEncoder(ex.getMessage());
+                            encoder = new BadResponseEncoder(ex.toString());
                         }
 
                         Protocol.write(os, encoder);
