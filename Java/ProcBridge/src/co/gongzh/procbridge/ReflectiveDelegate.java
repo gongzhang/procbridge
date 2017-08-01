@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +54,14 @@ final class ReflectiveDelegate implements ProcBridgeServer.Delegate {
             throw new RuntimeException("unknown api: " + api);
         }
         Object ret;
-        if (m.getParameterCount() == 1) {
-            ret = m.invoke(target, body);
-        } else {
-            ret = m.invoke(target);
+        try {
+            if (m.getParameterCount() == 1) {
+                ret = m.invoke(target, body);
+            } else {
+                ret = m.invoke(target);
+            }
+        } catch (InvocationTargetException ex) {
+            throw new RuntimeException(ex.getTargetException().toString());
         }
         if (ret instanceof JSONObject) {
             return (JSONObject) ret;
