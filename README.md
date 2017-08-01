@@ -12,7 +12,7 @@ The *next version* of ProcBridge will also support **Event-Based** model, which 
 
 #### Latest Version
 
-- **Java**: 1.0
+- **Java**: 1.0。2
 - **Python**: 1.0.2
 
 #### Compatibility Notes
@@ -32,14 +32,14 @@ If you need to use ProcBridge on an earlier version runtime, feel free to open a
 <dependency>
     <groupId>co.gongzh.procbridge</groupId>
     <artifactId>procbridge</artifactId>
-    <version>1.0</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
 #### Gradle
 
 ```gradle
-compile 'co.gongzh.procbridge:procbridge:1.0'
+compile 'co.gongzh.procbridge:procbridge:1.0.2'
 ```
 
 #### Jar
