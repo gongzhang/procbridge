@@ -16,9 +16,8 @@ public class Server {
     public static void main(String[] args) {
 
         int port = 8877;
-        long timeout = 10000; // 10 seconds
 
-        ProcBridgeServer server = new ProcBridgeServer(port, timeout, new Object() {
+        ProcBridgeServer server = new ProcBridgeServer(port, new Object() {
 
             @APIHandler JSONObject echo(JSONObject arg) {
                 return arg;

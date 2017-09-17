@@ -34,20 +34,18 @@ public final class ProcBridgeServer {
     private final int port;
     private final Delegate delegate;
     private boolean started;
-    private long timeout;
 
     private ExecutorService executor;
     private ServerSocket serverSocket;
 
-    public ProcBridgeServer(int port, long timeout, @NotNull Object delegate) {
-        this(port, timeout, new ReflectiveDelegate(delegate));
+    public ProcBridgeServer(int port, @NotNull Object delegate) {
+        this(port, new ReflectiveDelegate(delegate));
     }
 
-    public ProcBridgeServer(int port, long timeout, Delegate delegate) {
+    public ProcBridgeServer(int port, Delegate delegate) {
         this.started = false;
         this.port = port;
         this.delegate = delegate;
-        this.timeout = timeout;
 
         this.executor = null;
         this.serverSocket = null;
@@ -59,14 +57,6 @@ public final class ProcBridgeServer {
 
     public int getPort() {
         return port;
-    }
-
-    public long getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(long timeout) {
-        this.timeout = timeout;
     }
 
     public synchronized void start() throws IOException {
@@ -83,7 +73,7 @@ public final class ProcBridgeServer {
             while (true) {
                 try {
                     Socket socket = serverSocket.accept();
-                    Connection conn = new Connection(socket, timeout, executor, delegate);
+                    Connection conn = new Connection(socket, executor, delegate);
                     synchronized (ProcBridgeServer.this) {
                         if (!started) {
                             return; // finish listener
@@ -119,53 +109,41 @@ public final class ProcBridgeServer {
     private static final class Connection implements Runnable {
 
         private final Socket socket;
-        private final long timeout;
         private final Delegate delegate;
         private final ExecutorService executor;
 
-        Connection(Socket socket, long timeout, ExecutorService executor, Delegate delegate) {
+        Connection(Socket socket, ExecutorService executor, Delegate delegate) {
             this.socket = socket;
-            this.timeout = timeout;
             this.delegate = delegate;
             this.executor = executor;
         }
 
         @Override
         public void run() {
-            try {
+            try (OutputStream os = socket.getOutputStream();
+                 InputStream is = socket.getInputStream()) {
 
-                TimeGuard guard = new TimeGuard(timeout, () -> {
-                    try (OutputStream os = socket.getOutputStream();
-                         InputStream is = socket.getInputStream()) {
+                RequestDecoder decoder = Protocol.read(is).asRequest();
+                if (decoder == null) {
+                    throw ProcBridgeException.malformedInputData();
+                }
 
-                        RequestDecoder decoder = Protocol.read(is).asRequest();
-                        if (decoder == null) {
-                            throw ProcBridgeException.malformedInputData();
-                        }
+                final String api = decoder.api;
+                final JSONObject body = decoder.body;
 
-                        final String api = decoder.api;
-                        final JSONObject body = decoder.body;
+                Encoder encoder;
+                try {
+                    JSONObject reply = delegate.handleRequest(api, body);
+                    encoder = new GoodResponseEncoder(reply);
+                } catch (Exception ex) {
+                    encoder = new BadResponseEncoder(ex.toString());
+                }
 
-                        Encoder encoder;
-                        try {
-                            JSONObject reply = delegate.handleRequest(api, body);
-                            encoder = new GoodResponseEncoder(reply);
-                        } catch (Exception ex) {
-                            encoder = new BadResponseEncoder(ex.toString());
-                        }
+                Protocol.write(os, encoder);
 
-                        Protocol.write(os, encoder);
-
-                    } catch (ProcBridgeException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                guard.execute(executor);
-
-            } catch (ProcBridgeException e) {
+            } catch (ProcBridgeException | IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
 
     }
