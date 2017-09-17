@@ -3,7 +3,7 @@ import procbridge
 
 
 host = '127.0.0.1'
-port = 8077
+port = 8877
 
 client = procbridge.ProcBridge(host, port)
 
