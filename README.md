@@ -1,3 +1,5 @@
+Note: this is a forked version of the original library which uses Gson instead of Json.org for the Java part. The rationable behind this is a problematic license of the Json.org, which requires that "The Software shall be used for Good, not Evil.". Sometimes it's hard to tell what is good and what is evil :(, especially in a corporate environment.
+
 # 1. Introduction
 
 **ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol. The goal is to provide an **consistency** and **convenient** way for developers to implement inter-process applications. Currently we have **Java** and **Python** implementations. More languages will be supported in the future.
