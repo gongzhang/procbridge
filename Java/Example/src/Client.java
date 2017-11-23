@@ -1,6 +1,6 @@
 import co.gongzh.procbridge.ProcBridge;
 import co.gongzh.procbridge.ProcBridgeException;
-import org.json.JSONObject;
+import com.google.gson.JsonObject;
 
 /**
  * @author Gong Zhang
@@ -16,7 +16,7 @@ public class Client {
         ProcBridge pb = new ProcBridge(host, port, timeout);
 
         try {
-            JSONObject resp;
+            JsonObject resp;
 
             resp = pb.request("echo", "{}");
             System.out.println(resp);

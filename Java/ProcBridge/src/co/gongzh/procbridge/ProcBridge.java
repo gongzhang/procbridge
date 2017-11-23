@@ -1,22 +1,23 @@
 package co.gongzh.procbridge;
 
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 /**
  * @author Gong Zhang
  */
 public final class ProcBridge {
 
+    private static final JsonParser parser = new JsonParser();
     private final String host;
     private final int port;
     private int timeout;
@@ -43,27 +44,27 @@ public final class ProcBridge {
         this.timeout = timeout;
     }
 
-    public JSONObject request(@NotNull String api) throws ProcBridgeException {
-        return request(api, (JSONObject) null);
+    public JsonObject request(@NotNull String api) throws ProcBridgeException {
+        return request(api, (JsonObject) null);
     }
 
-    public JSONObject request(@NotNull String api, @Nullable String jsonText) throws ProcBridgeException {
+    public JsonObject request(@NotNull String api, @Nullable String jsonText) throws ProcBridgeException {
         try {
             if (jsonText == null) {
                 jsonText = "{}";
             }
-            JSONObject obj = new JSONObject(jsonText);
+            JsonObject obj = parser.parse(jsonText).getAsJsonObject();
             return request(api, obj);
-        } catch (JSONException ex) {
+        } catch (JsonParseException ex) {
             throw new IllegalArgumentException(ex);
         }
     }
 
     @NotNull
-    public JSONObject request(@NotNull String api, @Nullable JSONObject body) throws ProcBridgeException {
+    public JsonObject request(@NotNull String api, @Nullable JsonObject body) throws ProcBridgeException {
         final RequestEncoder request = new RequestEncoder(api, body);
 
-        final JSONObject[] out_json = { null };
+        final JsonObject[] out_json = { null };
         final String[] out_err_msg = { null };
 
         try (final Socket socket = new Socket()) {

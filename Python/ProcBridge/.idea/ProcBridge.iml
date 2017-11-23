@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/example" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/procbridge" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.5.0 (/Library/Frameworks/Python.framework/Versions/3.5/bin/python3.5) (1)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.6.2 (X:\tools\Python36\python-3.6.2.amd64\python.exe) (1)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

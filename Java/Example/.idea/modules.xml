@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Example.iml" filepath="$PROJECT_DIR$/Example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ProcBridge/ProcBridge.iml" filepath="$PROJECT_DIR$/../ProcBridge/ProcBridge.iml" />
     </modules>
   </component>
 </project>

@@ -1,8 +1,8 @@
 package co.gongzh.procbridge;
 
+import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ public final class ProcBridgeServer {
          * @throws Exception any exception for bad response
          */
         @Nullable
-        JSONObject handleRequest(@NotNull String api, @NotNull JSONObject body) throws Exception;
+        JsonObject handleRequest(@NotNull String api, @NotNull JsonObject body) throws Exception;
     }
 
     private final int port;
@@ -129,11 +129,11 @@ public final class ProcBridgeServer {
                 }
 
                 final String api = decoder.api;
-                final JSONObject body = decoder.body;
+                final JsonObject body = decoder.body;
 
                 Encoder encoder;
                 try {
-                    JSONObject reply = delegate.handleRequest(api, body);
+                    JsonObject reply = delegate.handleRequest(api, body);
                     encoder = new GoodResponseEncoder(reply);
                 } catch (Exception ex) {
                     encoder = new BadResponseEncoder(ex.toString());
