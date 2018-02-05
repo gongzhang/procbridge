@@ -1,5 +1,6 @@
 package co.gongzh.procbridge;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -46,6 +47,8 @@ final class Protocol {
     static final String KEY_API = "api";
     static final String KEY_BODY = "body";
     static final String KEY_MESSAGE = "msg";
+    
+    static final String CLOSE_MESSAGE_API = "__PB_CLOSE__";
 
     static void write(OutputStream stream, Encoder encoder) throws ProcBridgeException {
         try {
@@ -142,7 +145,7 @@ final class Protocol {
             // 6. JSON OBJECT
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             int nRead;
-            byte[] data = new byte[1024];
+            byte[] data = new byte[len];//reads only len characters as of protocol definition.
             while ((nRead = stream.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
                 if (buffer.size() >= len) {
@@ -331,7 +334,11 @@ final class GoodResponseDecoder extends Decoder {
 
     @Override
     void decode(JsonObject object) throws ProcBridgeException {
-        JsonObject body = object.get(Protocol.KEY_BODY).getAsJsonObject();
+    	JsonElement element = object.get(Protocol.KEY_BODY);
+    	if (element == null) {
+    		throw new ProcBridgeException("null response received from server.");
+    	}
+        JsonObject body = element.getAsJsonObject();
         if (body != null) {
             this.body = body;
         }

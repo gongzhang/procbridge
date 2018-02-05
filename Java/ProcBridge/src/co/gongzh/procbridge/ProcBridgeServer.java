@@ -1,151 +1,302 @@
 package co.gongzh.procbridge;
 
-import com.google.gson.JsonObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 /**
  * @author Gong Zhang
  */
 public final class ProcBridgeServer {
 
-    @FunctionalInterface
-    public interface Delegate {
-        /**
-         * An interface that defines how server handles requests.
-         *
-         * @param api the requested API name
-         * @param body the JSON body of request
-         * @return a JSON object or {@code null} for good response
-         * @throws Exception any exception for bad response
-         */
-        @Nullable
-        JsonObject handleRequest(@NotNull String api, @NotNull JsonObject body) throws Exception;
-    }
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProcBridgeServer.class);
 
-    private final int port;
-    private final Delegate delegate;
-    private boolean started;
+	interface Delegate {
 
-    private ExecutorService executor;
-    private ServerSocket serverSocket;
+		void onMessage(@NotNull String api, @NotNull JsonObject body) throws Exception;
 
-    public ProcBridgeServer(int port, @NotNull Object delegate) {
-        this(port, new ReflectiveDelegate(delegate));
-    }
+		void onError(Exception e);
 
-    public ProcBridgeServer(int port, Delegate delegate) {
-        this.started = false;
-        this.port = port;
-        this.delegate = delegate;
+	}
 
-        this.executor = null;
-        this.serverSocket = null;
-    }
+	private final int port;
+	private Delegate delegate;
+	private boolean started;
 
-    public synchronized boolean isStarted() {
-        return started;
-    }
+	private ExecutorService executor;
+	private ServerSocket serverSocket;
 
-    public int getPort() {
-        return port;
-    }
+	private ConcurrentLinkedQueue<JsonObject> messagesToSendQueue = new ConcurrentLinkedQueue<>();
 
-    public synchronized void start() throws IOException {
-        if (started) {
-            throw new IllegalStateException("server already started");
-        }
+	private ConnectionSendMessages sender;
+	private Semaphore semaphore = new Semaphore(1);
 
-        final ServerSocket serverSocket = new ServerSocket(this.port); // possible throw exception!
-        this.serverSocket = serverSocket;
+	public ProcBridgeServer(int port) {
+		this.started = false;
+		this.port = port;
 
-        final ExecutorService executor = Executors.newCachedThreadPool();
-        this.executor = executor;
-        executor.execute(() -> {
-            while (true) {
-                try {
-                    Socket socket = serverSocket.accept();
-                    Connection conn = new Connection(socket, executor, delegate);
-                    synchronized (ProcBridgeServer.this) {
-                        if (!started) {
-                            return; // finish listener
-                        }
-                        executor.execute(conn);
-                    }
-                } catch (IOException ignored) {
-                    return; // finish listener
-                }
-            }
-        });
+		this.executor = null;
+		this.serverSocket = null;
+	}
 
-        started = true;
-    }
+	public synchronized boolean isStarted() {
+		return started;
+	}
 
-    public synchronized void stop() {
-        if (!started) {
-            throw new IllegalStateException("server does not started");
-        }
+	public int getPort() {
+		return port;
+	}
 
-        executor.shutdown();
-        executor = null;
+	public synchronized void setDelegate(@NotNull Object delegate) {
+		this.delegate = new ReflectiveDelegate(this, delegate);
+	}
 
-        try {
-            serverSocket.close();
-        } catch (IOException ignored) {
-        }
-        serverSocket = null;
+	public synchronized void start() throws IOException {
+		start(false);
+	}
 
-        this.started = false;
-    }
+	public synchronized void start(boolean daemonThreads) throws IOException {
+		if (started) {
+			throw new IllegalStateException("Server already started.");
+		}
 
-    private static final class Connection implements Runnable {
+		if (this.delegate == null) {
+			throw new IllegalStateException("A delegate must be set before starting the server.");
+		}
 
-        private final Socket socket;
-        private final Delegate delegate;
-        private final ExecutorService executor;
+		this.serverSocket = new ServerSocket(this.port); // possible throw exception!
 
-        Connection(Socket socket, ExecutorService executor, Delegate delegate) {
-            this.socket = socket;
-            this.delegate = delegate;
-            this.executor = executor;
-        }
+		if (daemonThreads) {
+			this.executor = Executors.newCachedThreadPool(new ThreadFactory() {
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread t = Executors.defaultThreadFactory().newThread(r);
+					t.setDaemon(true);
+					return t;
+				}
+			});
+		} else {
+			this.executor = Executors.newCachedThreadPool();
+		}
 
-        @Override
-        public void run() {
-            try (OutputStream os = socket.getOutputStream();
-                 InputStream is = socket.getInputStream()) {
+		executor.execute(() -> {
+			Thread.currentThread().setName("pb_ServerSocketListener");
+			while (true) {
+				try {
+					Socket socket = serverSocket.accept();
+					ConnectionReceiveMessages receiver = new ConnectionReceiveMessages(socket, this);
+					this.sender = new ConnectionSendMessages(socket, this);
+					synchronized (ProcBridgeServer.this) {
+						if (!started) {
+							return; // finish listener
+						}
+						executor.execute(receiver);
+						executor.execute(sender);
+					}
+				} catch (IOException ignored) {
+					return; // finish listener
+				}
+			}
+		});
 
-                RequestDecoder decoder = Protocol.read(is).asRequest();
-                if (decoder == null) {
-                    throw ProcBridgeException.malformedInputData();
-                }
+		started = true;
+	}
 
-                final String api = decoder.api;
-                final JsonObject body = decoder.body;
+	public synchronized void stop() {
+		if (!started) {
+			throw new IllegalStateException("Server did not started.");
+		}
 
-                Encoder encoder;
-                try {
-                    JsonObject reply = delegate.handleRequest(api, body);
-                    encoder = new GoodResponseEncoder(reply);
-                } catch (Exception ex) {
-                    encoder = new BadResponseEncoder(ex.toString());
-                }
+		executor.shutdown();
+		executor = null;
 
-                Protocol.write(os, encoder);
+		try {
+			serverSocket.close();
+		} catch (IOException ignored) {
+		}
+		serverSocket = null;
 
-            } catch (ProcBridgeException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+		this.started = false;
+	}
 
-    }
+	public void sendMessage(@NotNull String api, @NotNull JsonObject response) throws Exception {
+
+		if (sender == null) {
+			throw new RuntimeException("Please establish a connection from a client before sending messages !");
+		}
+
+		// put it on the queue to be sent.
+		messagesToSendQueue.add(response);
+		notifySender();
+	}
+
+	private void notifySender() {
+		// Sends a message to the sender thread to wake him up !
+		semaphore.release();
+	}
+
+	private static final class ConnectionReceiveMessages implements Runnable {
+
+		private final Socket socket;
+		private final Delegate delegate;
+
+		private final ProcBridgeServer server;
+
+		ConnectionReceiveMessages(Socket socket, ProcBridgeServer server) {
+			this.socket = socket;
+			this.delegate = server.delegate;
+			this.server = server;
+		}
+
+		@Override
+		public void run() {
+
+			Thread.currentThread().setName("pb_MessageReceiverThread");
+
+			InputStream is;
+			try {
+				is = socket.getInputStream();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+
+			while (true) {
+				if (!server.started || socket.isClosed() || socket.isInputShutdown()) {
+					return;
+				}
+
+				try {
+					// Read will be a blocking operation until next content in the is.
+					RequestDecoder decoder = Protocol.read(is).asRequest();
+					if (decoder == null) {
+						throw ProcBridgeException.malformedInputData();
+					}
+
+					final String api = decoder.api;
+					final JsonObject body = decoder.body;
+
+					LOGGER.trace("Received message for api : " + api);
+
+					if (Protocol.CLOSE_MESSAGE_API.equals(api)) {
+						closeSocket();
+						return;
+					}
+
+					try {
+						delegate.onMessage(api, body);
+					} catch (Exception ex) {
+						if (LOGGER.isDebugEnabled()) {
+							LOGGER.debug("onError : " + ex, ex);
+						}
+						delegate.onError(ex);
+					}
+
+				} catch (ProcBridgeException e) {
+					if (isConnectionReset(e)) {
+						LOGGER.warn("Connection has been reset by the client without sending a close message.");
+						closeSocket();
+						return;
+					}
+					throw new RuntimeException(e);
+				}
+
+			}
+
+		}
+
+		private void closeSocket() {
+			try {
+				socket.close();
+				// notify sender in order to end the receiver thread.
+				server.notifySender();
+			} catch (IOException ignore) {
+				// ignore it.
+			}
+		}
+
+		/**
+		 * Detects a connection reset error raised by the JDK.
+		 * 
+		 * @param e
+		 *            the exception to check recursively
+		 * @return true if found.
+		 */
+		private boolean isConnectionReset(Throwable e) {
+			if (e instanceof SocketException && "Connection reset".equals(e.getMessage())) {
+				return true;
+			}
+			if (e.getCause() != null) {
+				return isConnectionReset(e.getCause());
+			}
+			return false;
+		}
+
+	}
+
+	private static final class ConnectionSendMessages implements Runnable {
+
+		private final Socket socket;
+		private final OutputStream os;
+
+		private final ProcBridgeServer server;
+
+		ConnectionSendMessages(Socket socket, ProcBridgeServer server) {
+			this.socket = socket;
+			this.server = server;
+			try {
+				os = socket.getOutputStream();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void run() {
+
+			Thread.currentThread().setName("pb_MessageSenderThread");
+			while (true) {
+				if (!server.started || socket.isOutputShutdown() || socket.isClosed()) {
+					return;
+				}
+
+				// sends the messages effectively
+				sendMessages();
+
+				// Waits for a notification before going to the next loop of message sending.
+				try {
+					server.semaphore.acquire();
+				} catch (InterruptedException ignored) {
+					// ignore it.
+				}
+			}
+		}
+
+		private void sendMessages() {
+
+			while (!server.messagesToSendQueue.isEmpty()) {
+				JsonObject messageToSend = server.messagesToSendQueue.poll();
+				try {
+					Protocol.write(os, new GoodResponseEncoder(messageToSend));
+				} catch (ProcBridgeException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+
+	}
 
 }
