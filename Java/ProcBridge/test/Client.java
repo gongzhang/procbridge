@@ -36,6 +36,9 @@ public class Client {
         ProcBridge pb = new ProcBridge(host, port, timeout, messageHandlerImpl);
 
         try {
+        	
+        	pb.getClientID();
+        	
         	pb.sendMessage("echo", "{echo:echoooo}");
 
             pb.sendMessage("add", "{elements: [1, 2, 3, 4, 5]}");
@@ -56,18 +59,14 @@ public class Client {
         
         //Wait for responses.
         try {
-			Thread.sleep(15000);
+			Thread.sleep(20000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
         
         pb.stop();
         
-        try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+        
     }
 
 }

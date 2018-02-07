@@ -69,6 +69,12 @@ public final class ProcBridge {
 	public long getTimeout() {
 		return timeout;
 	}
+	
+	public int getClientID() throws ProcBridgeException {
+		//TODO : implement it correctly !
+		sendMessage(Protocol.GET_CLIENT_ID_API);
+		return 0;
+	}
 
 	public void sendMessage(@NotNull String api) throws ProcBridgeException {
 		sendMessage(api, (JsonObject) null);
@@ -169,6 +175,14 @@ public final class ProcBridge {
 			} catch (IOException e) {
 				throw new RuntimeException("Error closing socket : ", e);
 			}
+		}
+		//Let the connection close normally before exiting.
+		//This method is generally called just before exit of the client program and without this small time, 
+		//The connection is closed by the end of the JVM and there is an error on the server side.
+        try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 

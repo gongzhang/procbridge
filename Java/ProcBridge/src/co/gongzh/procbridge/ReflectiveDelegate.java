@@ -1,14 +1,14 @@
 package co.gongzh.procbridge;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * @author Gong Zhang
@@ -20,7 +20,7 @@ final class ReflectiveDelegate implements ProcBridgeServer.Delegate {
     private final Object target;
     @NotNull
     private final Map<String, Method> apiMap;
-
+    
     private ProcBridgeServer server;
     
     ReflectiveDelegate(ProcBridgeServer server, @NotNull Object target) {
@@ -69,30 +69,29 @@ final class ReflectiveDelegate implements ProcBridgeServer.Delegate {
             throw new RuntimeException(ex.getTargetException().toString());
         }
         if (ret instanceof JsonObject) {
-            sendMessage(api, (JsonObject) ret);
+            sendMessage((JsonObject) ret);
         } else if (ret instanceof String) {
             String jsonText = (String) ret;
-            sendMessage(api, parser.parse(jsonText).getAsJsonObject());
+            sendMessage(parser.parse(jsonText).getAsJsonObject());
         } else {
-        	sendMessage(api, null);
+        	throw new NullPointerException("Can not send a null value as a response. Please consider your delegate response for : " + api);
         }
     }
     
     @Override
     public void onError(Exception e) {
     	JsonObject err=new JsonObject();
-    	err.addProperty("message", e.getMessage());
+    	err.addProperty("error", e.getMessage());
     	try {
-			sendMessage("ERROR", err);
+			sendMessage(err);
 		} catch (Exception e1) {
 			//impossible ?
 			e1.printStackTrace();
 		}
     }
     
-    private void sendMessage(@NotNull String api, @NotNull JsonObject response) throws Exception {
-    	server.sendMessage(api, response);
-    	
+    private void sendMessage(@NotNull JsonObject response) throws Exception {
+    	server.sendMessage(server.getClientIDOfCurrentConnectionReceiver(), response);
     }
    
 }

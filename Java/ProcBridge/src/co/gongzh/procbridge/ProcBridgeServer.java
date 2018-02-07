@@ -6,11 +6,13 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -40,10 +42,14 @@ public final class ProcBridgeServer {
 	private ExecutorService executor;
 	private ServerSocket serverSocket;
 
-	private ConcurrentLinkedQueue<JsonObject> messagesToSendQueue = new ConcurrentLinkedQueue<>();
+	private AtomicInteger clientIDSequence = new AtomicInteger(1);
 
-	private ConnectionSendMessages sender;
-	private Semaphore semaphore = new Semaphore(1);
+	/**
+	 * The key in the map is the clientID !
+	 */
+	private ConcurrentHashMap<Integer, ConcurrentLinkedQueue<JsonObject>> mapOfMessagesToSendQueue = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Integer, ConnectionSendMessages> mapOfClientSenders = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Integer, Semaphore> mapOfClientSemaphores = new ConcurrentHashMap<>();
 
 	public ProcBridgeServer(int port) {
 		this.started = false;
@@ -94,18 +100,22 @@ public final class ProcBridgeServer {
 		}
 
 		executor.execute(() -> {
-			Thread.currentThread().setName("pb_ServerSocketListener");
+			Thread.currentThread().setName("pb_ServerSocketListener_" + getPort());
 			while (true) {
 				try {
 					Socket socket = serverSocket.accept();
-					ConnectionReceiveMessages receiver = new ConnectionReceiveMessages(socket, this);
-					this.sender = new ConnectionSendMessages(socket, this);
+					int clientID = clientIDSequence.getAndIncrement();
+					ConnectionReceiveMessages receiver = new ConnectionReceiveMessages(socket, clientID, this);
+					Semaphore semaphore = new Semaphore(1);
+					this.mapOfClientSemaphores.put(clientID, semaphore);
+					this.mapOfMessagesToSendQueue.put(clientID, new ConcurrentLinkedQueue<>());
+					this.mapOfClientSenders.put(clientID, new ConnectionSendMessages(socket, clientID, this));
 					synchronized (ProcBridgeServer.this) {
 						if (!started) {
 							return; // finish listener
 						}
 						executor.execute(receiver);
-						executor.execute(sender);
+						executor.execute(this.mapOfClientSenders.get(clientID));
 					}
 				} catch (IOException ignored) {
 					return; // finish listener
@@ -133,39 +143,58 @@ public final class ProcBridgeServer {
 		this.started = false;
 	}
 
-	public void sendMessage(@NotNull String api, @NotNull JsonObject response) throws Exception {
+	public void sendMessage(int clientID, @NotNull JsonObject response) throws Exception {
+
+		ConnectionSendMessages sender = mapOfClientSenders.get(clientID);
 
 		if (sender == null) {
-			throw new RuntimeException("Please establish a connection from a client before sending messages !");
+			throw new RuntimeException(
+			        "Please establish a connection from a client ( " + clientID + ") before sending messages !");
 		}
 
 		// put it on the queue to be sent.
-		messagesToSendQueue.add(response);
-		notifySender();
+		this.mapOfMessagesToSendQueue.get(clientID).add(response);
+		notifySender(clientID);
 	}
 
-	private void notifySender() {
+	private void notifySender(int clientID) {
+		Semaphore semaphore = this.mapOfClientSemaphores.get(clientID);
+		if (semaphore == null) {
+			throw new RuntimeException("Connection has been closed for client id : " + clientID);
+		}
 		// Sends a message to the sender thread to wake him up !
 		semaphore.release();
+	}
+	
+	int getClientIDOfCurrentConnectionReceiver() {
+		int currClientID = ConnectionReceiveMessages.clientIDThreadLocal.get();
+		LOGGER.trace("Current thread clientID : " + currClientID);
+		return currClientID;
 	}
 
 	private static final class ConnectionReceiveMessages implements Runnable {
 
 		private final Socket socket;
 		private final Delegate delegate;
-
+		
+		//thread local to be able to retrieve the clientID value from a ConnectionReceiveMessages thread.
+		private static ThreadLocal<Integer> clientIDThreadLocal = new ThreadLocal<>();
+		
+		private final int clientID;
 		private final ProcBridgeServer server;
 
-		ConnectionReceiveMessages(Socket socket, ProcBridgeServer server) {
+		ConnectionReceiveMessages(Socket socket, int clientID, ProcBridgeServer server) {
 			this.socket = socket;
 			this.delegate = server.delegate;
 			this.server = server;
+			this.clientID = clientID; 
 		}
 
 		@Override
 		public void run() {
 
-			Thread.currentThread().setName("pb_MessageReceiverThread");
+			clientIDThreadLocal.set(clientID);
+			Thread.currentThread().setName("pb_MessageReceiverThread_" + server.getPort() + "_" + clientID);
 
 			InputStream is;
 			try {
@@ -189,14 +218,23 @@ public final class ProcBridgeServer {
 					final String api = decoder.api;
 					final JsonObject body = decoder.body;
 
-					LOGGER.trace("Received message for api : " + api);
+					LOGGER.trace(clientID + " - Received message for api : " + api);
 
 					if (Protocol.CLOSE_MESSAGE_API.equals(api)) {
 						closeSocket();
 						return;
 					}
-
+					
 					try {
+						//protocol specific message sending.
+						if (Protocol.GET_CLIENT_ID_API.equals(api)) {
+							JsonObject response = new JsonObject();
+							response.addProperty("clientID", clientID);
+							server.sendMessage(clientID, response);
+							continue; //Next message
+						}
+						
+						//normal message sending : 
 						delegate.onMessage(api, body);
 					} catch (Exception ex) {
 						if (LOGGER.isDebugEnabled()) {
@@ -221,11 +259,15 @@ public final class ProcBridgeServer {
 		private void closeSocket() {
 			try {
 				socket.close();
-				// notify sender in order to end the receiver thread.
-				server.notifySender();
 			} catch (IOException ignore) {
 				// ignore it.
 			}
+			// notify sender in order to end the receiver thread.
+			server.notifySender(clientID);
+			server.mapOfClientSenders.remove(clientID);
+			server.mapOfClientSemaphores.remove(clientID);
+			server.mapOfMessagesToSendQueue.remove(clientID);
+			clientIDThreadLocal.remove();
 		}
 
 		/**
@@ -252,10 +294,13 @@ public final class ProcBridgeServer {
 		private final Socket socket;
 		private final OutputStream os;
 
+		private final int clientID;
+		
 		private final ProcBridgeServer server;
 
-		ConnectionSendMessages(Socket socket, ProcBridgeServer server) {
+		ConnectionSendMessages(Socket socket, int clientID, ProcBridgeServer server) {
 			this.socket = socket;
+			this.clientID = clientID;
 			this.server = server;
 			try {
 				os = socket.getOutputStream();
@@ -267,7 +312,7 @@ public final class ProcBridgeServer {
 		@Override
 		public void run() {
 
-			Thread.currentThread().setName("pb_MessageSenderThread");
+			Thread.currentThread().setName("pb_MessageSenderThread_" + server.getPort() + "_" + clientID);
 			while (true) {
 				if (!server.started || socket.isOutputShutdown() || socket.isClosed()) {
 					return;
@@ -278,7 +323,8 @@ public final class ProcBridgeServer {
 
 				// Waits for a notification before going to the next loop of message sending.
 				try {
-					server.semaphore.acquire();
+					Semaphore semaphore = server.mapOfClientSemaphores.get(clientID);
+					semaphore.acquire();
 				} catch (InterruptedException ignored) {
 					// ignore it.
 				}
@@ -287,8 +333,10 @@ public final class ProcBridgeServer {
 
 		private void sendMessages() {
 
-			while (!server.messagesToSendQueue.isEmpty()) {
-				JsonObject messageToSend = server.messagesToSendQueue.poll();
+			 ConcurrentLinkedQueue<JsonObject> messagesToSendQueue = server.mapOfMessagesToSendQueue.get(clientID);
+			
+			while (messagesToSendQueue!= null && !messagesToSendQueue.isEmpty()) {
+				JsonObject messageToSend = messagesToSendQueue.poll();
 				try {
 					Protocol.write(os, new GoodResponseEncoder(messageToSend));
 				} catch (ProcBridgeException e) {

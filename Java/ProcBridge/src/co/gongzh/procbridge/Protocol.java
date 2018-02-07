@@ -48,6 +48,8 @@ final class Protocol {
     static final String KEY_BODY = "body";
     static final String KEY_MESSAGE = "msg";
     
+    static final String GET_CLIENT_ID_API = "__PB_GET_CLIENTID__";
+    
     static final String CLOSE_MESSAGE_API = "__PB_CLOSE__";
 
     static void write(OutputStream stream, Encoder encoder) throws ProcBridgeException {

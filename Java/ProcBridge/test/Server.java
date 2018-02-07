@@ -67,7 +67,10 @@ public class Server {
                     	JsonObject message = new JsonObject();
                     	message.addProperty("body", line);
                     	try {
-							server.sendMessage("message", message);
+                    		//Send to the first connected client.
+                    		//To determine a correct client ID, it must be sent by the client after asking the server...
+                    		//because at this point the server does not know which client it is serving if there are multiple connected.
+							server.sendMessage(1, message);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
