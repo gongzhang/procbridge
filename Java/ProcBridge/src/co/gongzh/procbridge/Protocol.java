@@ -1,9 +1,11 @@
 package co.gongzh.procbridge;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.*;
 
@@ -14,6 +16,7 @@ final class Protocol {
 
     private static final byte[] FLAG = { 'p', 'b' };
     private static final byte[] VERSION = { 1, 0 };
+    private static final JsonParser parser = new JsonParser();
 
     enum StatusCode {
         REQUEST(0), RESPONSE_GOOD(1), RESPONSE_BAD(2);
@@ -44,6 +47,10 @@ final class Protocol {
     static final String KEY_API = "api";
     static final String KEY_BODY = "body";
     static final String KEY_MESSAGE = "msg";
+    
+    static final String GET_CLIENT_ID_API = "__PB_GET_CLIENTID__";
+    
+    static final String CLOSE_MESSAGE_API = "__PB_CLOSE__";
 
     static void write(OutputStream stream, Encoder encoder) throws ProcBridgeException {
         try {
@@ -140,7 +147,7 @@ final class Protocol {
             // 6. JSON OBJECT
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             int nRead;
-            byte[] data = new byte[1024];
+            byte[] data = new byte[len];//reads only len characters as of protocol definition.
             while ((nRead = stream.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
                 if (buffer.size() >= len) {
@@ -155,14 +162,14 @@ final class Protocol {
             buffer.flush();
             data = buffer.toByteArray();
             String jsonText = new String(data, "UTF-8");
-            JSONObject obj = new JSONObject(jsonText);
+            JsonObject obj = parser.parse(jsonText).getAsJsonObject();
 
             decoder.decode(obj);
             return decoder;
 
         } catch (IOException e) {
             throw new ProcBridgeException(e);
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             throw ProcBridgeException.malformedInputData();
         }
     }
@@ -179,9 +186,9 @@ final class RequestEncoder extends Encoder {
     @NotNull
     private final String api;
     @Nullable
-    private final JSONObject body;
+    private final JsonObject body;
 
-    RequestEncoder(@NotNull String api, @Nullable JSONObject body) {
+    RequestEncoder(@NotNull String api, @Nullable JsonObject body) {
         if (api.isEmpty()) {
             throw new IllegalArgumentException("api cannot be empty");
         }
@@ -191,12 +198,12 @@ final class RequestEncoder extends Encoder {
 
     @Override
     byte[] encode() throws ProcBridgeException {
-        JSONObject obj = new JSONObject();
-        obj.put(Protocol.KEY_API, api);
+        JsonObject obj = new JsonObject();
+        obj.addProperty(Protocol.KEY_API, api);
         if (body != null) {
-            obj.put(Protocol.KEY_BODY, body);
+            obj.add(Protocol.KEY_BODY, body);
         } else {
-            obj.put(Protocol.KEY_BODY, new JSONObject());
+            obj.add(Protocol.KEY_BODY, new JsonObject());
         }
         String jsonText = obj.toString();
         try {
@@ -215,17 +222,17 @@ final class RequestEncoder extends Encoder {
 final class GoodResponseEncoder extends Encoder {
 
     @Nullable
-    private final JSONObject body;
+    private final JsonObject body;
 
-    GoodResponseEncoder(@Nullable JSONObject body) {
+    GoodResponseEncoder(@Nullable JsonObject body) {
         this.body = body;
     }
 
     @Override
     byte[] encode() throws ProcBridgeException {
-        JSONObject obj = new JSONObject();
+        JsonObject obj = new JsonObject();
         if (body != null) {
-            obj.put(Protocol.KEY_BODY, body);
+            obj.add(Protocol.KEY_BODY, body);
         }
         String jsonText = obj.toString();
         try {
@@ -253,9 +260,9 @@ final class BadResponseEncoder extends Encoder {
 
     @Override
     byte[] encode() throws ProcBridgeException {
-        JSONObject obj = new JSONObject();
+        JsonObject obj = new JsonObject();
         if (message != null) {
-            obj.put(Protocol.KEY_MESSAGE, message);
+            obj.addProperty(Protocol.KEY_MESSAGE, message);
         }
         String jsonText = obj.toString();
         try {
@@ -274,8 +281,8 @@ final class BadResponseEncoder extends Encoder {
 
 abstract class Decoder {
 
-    abstract void decode(JSONObject object) throws ProcBridgeException;
-    abstract JSONObject getResponseBody();
+    abstract void decode(JsonObject object) throws ProcBridgeException;
+    abstract JsonObject getResponseBody();
     abstract String getErrorMessage();
     abstract RequestDecoder asRequest();
 
@@ -286,28 +293,28 @@ final class RequestDecoder extends Decoder {
     @NotNull
     String api = "";
     @NotNull
-    JSONObject body = new JSONObject();
+    JsonObject body = new JsonObject();
 
     @Override
-    void decode(JSONObject object) throws ProcBridgeException {
+    void decode(JsonObject object) throws ProcBridgeException {
         try {
-            String api = object.getString(Protocol.KEY_API);
+            String api = object.get(Protocol.KEY_API).getAsString();
             if (api.isEmpty()) {
                 throw ProcBridgeException.malformedInputData();
             }
             this.api = api;
 
-            JSONObject body = object.optJSONObject(Protocol.KEY_BODY);
+            JsonObject body = object.get(Protocol.KEY_BODY).getAsJsonObject();
             if (body != null) {
                 this.body = body;
             }
 
-        } catch (JSONException ex) {
+        } catch (JsonParseException ex) {
             throw ProcBridgeException.malformedInputData();
         }
     }
 
-    JSONObject getResponseBody() {
+    JsonObject getResponseBody() {
         return null;
     }
 
@@ -325,17 +332,21 @@ final class GoodResponseDecoder extends Decoder {
 
     @NotNull
     private
-    JSONObject body = new JSONObject();
+    JsonObject body = new JsonObject();
 
     @Override
-    void decode(JSONObject object) throws ProcBridgeException {
-        JSONObject body = object.optJSONObject(Protocol.KEY_BODY);
+    void decode(JsonObject object) throws ProcBridgeException {
+    	JsonElement element = object.get(Protocol.KEY_BODY);
+    	if (element == null) {
+    		throw new ProcBridgeException("null response received from server.");
+    	}
+        JsonObject body = element.getAsJsonObject();
         if (body != null) {
             this.body = body;
         }
     }
 
-    JSONObject getResponseBody() {
+    JsonObject getResponseBody() {
         return body;
     }
 
@@ -356,14 +367,14 @@ final class BadResponseDecoder extends Decoder {
     String message = "";
 
     @Override
-    void decode(JSONObject object) throws ProcBridgeException {
-        String msg = object.optString(Protocol.KEY_MESSAGE);
+    void decode(JsonObject object) throws ProcBridgeException {
+        String msg = object.get(Protocol.KEY_MESSAGE).getAsString();
         if (msg != null) {
             this.message = msg;
         }
     }
 
-    JSONObject getResponseBody() {
+    JsonObject getResponseBody() {
         return null;
     }
 

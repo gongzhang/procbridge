@@ -1,3 +1,12 @@
+Note: this is a forked version of the original library which uses Gson instead of Json.org for the Java part. The rationable behind this is a problematic license of the Json.org, which requires that "The Software shall be used for Good, not Evil.". Sometimes it's hard to tell what is good and what is evil :(, especially in a corporate environment.
+
+Note 2 : this is a forked version of the forked one.
+It implements a full duplex bidirectionnal communication between the client and the server through permanent TCP Connection.
+
+The code can used as is and is not released and available via a maven repository by now.
+
+
+
 # 1. Introduction
 
 **ProcBridge** is a lightweight **socket-based** IPC (*Inter-Process Communication*) protocol. The goal is to provide an **consistency** and **convenient** way for developers to implement inter-process applications. Currently we have **Java** and **Python** implementations. More languages will be supported in the future.
@@ -8,7 +17,6 @@ ProcBridge is based on **Request-Response** model. Server provides a group of AP
 
 <img src="./Resources/Intro.png" width="800">
 
-The *next version* of ProcBridge will also support **Event-Based** model, which unifies the communication code between server side and client side.
 
 #### Latest Version
 

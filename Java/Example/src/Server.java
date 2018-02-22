@@ -1,7 +1,7 @@
 import co.gongzh.procbridge.APIHandler;
 import co.gongzh.procbridge.ProcBridgeServer;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,22 +16,22 @@ public class Server {
     public static void main(String[] args) {
 
         int port = 8877;
-        long timeout = 10000; // 10 seconds
 
-        ProcBridgeServer server = new ProcBridgeServer(port, timeout, new Object() {
+        ProcBridgeServer server = new ProcBridgeServer(port, new Object() {
 
-            @APIHandler JSONObject echo(JSONObject arg) {
+            @APIHandler
+            JsonObject echo(JsonObject arg) {
                 return arg;
             }
 
-            @APIHandler JSONObject add(JSONObject arg) {
-                JSONArray elements = arg.getJSONArray("elements");
+            @APIHandler JsonObject add(JsonObject arg) {
+                JsonArray elements = arg.get("elements").getAsJsonArray();
                 int sum = 0;
-                for (int i = 0; i < elements.length(); i++) {
-                    sum += elements.getInt(i);
+                for (int i = 0; i < elements.size(); i++) {
+                    sum += elements.get(i).getAsInt();
                 }
-                JSONObject result = new JSONObject();
-                result.put("result", sum);
+                JsonObject result = new JsonObject();
+                result.addProperty("result", sum);
                 return result;
             }
 
