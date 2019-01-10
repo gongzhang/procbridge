@@ -1,0 +1,6 @@
+[submodule "java"]
+	path = java
+	url = https://github.com/gongzhang/procbridge-java.git
+[submodule "python"]
+	path = python
+	url = https://github.com/gongzhang/procbridge-python.git
