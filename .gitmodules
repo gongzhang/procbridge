@@ -4,3 +4,6 @@
 [submodule "python"]
 	path = python
 	url = https://github.com/gongzhang/procbridge-python.git
+[submodule "nodejs"]
+	path = nodejs
+	url = https://github.com/gongzhang/procbridge-nodejs.git
