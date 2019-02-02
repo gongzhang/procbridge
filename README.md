@@ -1,11 +1,14 @@
-Note: this is a forked version of the original library which uses Gson instead of Json.org for the Java part. The rationable behind this is a problematic license of the Json.org, which requires that "The Software shall be used for Good, not Evil.". Sometimes it's hard to tell what is good and what is evil :(, especially in a corporate environment.
+<img src="./doc/logo.png" width="140"/>
+<img src="https://img.shields.io/github/license/gongzhang/procbridge.svg"/>
+<img src="https://img.shields.io/pypi/pyversions/procbridge.svg"/>
+<img src="https://img.shields.io/badge/java-8-brightgreen.svg"/>
+<img src="https://img.shields.io/badge/node.js-8-red.svg"/>
 
-Note 2 : this is a forked version of the forked one.
-It implements a full duplex bidirectionnal communication between the client and the server through permanent TCP Connection.
+***
 
-The code can used as is and is not released and available via a maven repository by now.
-
-
+**Important Note for Collaborators (2019-01-10)**  👀
+ 
+The library implementations have been **refactored** and **migrated** to [standalone repos](#2-language-support). From now on, this repo only stores docs. If you worked on `master` branch before, please switch to `legacy`. Thank you for your understanding and support. 😼
 
 # 1. Introduction
 
