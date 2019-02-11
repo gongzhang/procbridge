@@ -1,8 +1,10 @@
+<p>
 <img src="./doc/logo.png" width="140"/>
 <img src="https://img.shields.io/github/license/gongzhang/procbridge.svg"/>
 <img src="https://img.shields.io/pypi/pyversions/procbridge.svg"/>
 <img src="https://img.shields.io/badge/java-8-brightgreen.svg"/>
 <img src="https://img.shields.io/badge/node.js-8-red.svg"/>
+</p>
 
 # 1. Introduction
 
@@ -18,14 +20,14 @@ ProcBridge has been **implemented in Java, Python, and Node.js**. If you want to
 
 Please go to sub-repos for more information.
 
-- ✅ **Java** - [gongzhang/procbridge-java](https://github.com/gongzhang/procbridge-java)
-- ✅ **Python** - [gongzhang/procbridge-python](https://github.com/gongzhang/procbridge-python)
-- ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
+- ✅ **Java** - [gongzhang/procbridge-java](https://github.com/gongzhang/procbridge-java)
+- ✅ **Python** - [gongzhang/procbridge-python](https://github.com/gongzhang/procbridge-python)
+- ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
 - ⚠️ **Go** - not yet supported
 
 # 3. Protocol Design
 
-<img src="./doc/protocol.png" width="450">
+<img src="./doc/protocol.png" width="550">
 
 Both request and response are encoded into **ProcBridge Packets**. Those binary packets are sent over TCP socket directly. Talk is cheap, please read [Python implementation](https://github.com/gongzhang/procbridge-python/blob/master/procbridge/protocol.py) to fully understand the protocol design.
 
