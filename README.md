@@ -12,17 +12,15 @@ The library implementations have been **refactored** and **migrated** to [standa
 
 # 1. Introduction
 
+ProcBridge is a super-lightweight IPC (Inter-Process Communication) protocol over TCP socket. It enables you to **send and recieve JSON** between processes easily. ProcBridge is much like a simplified version of HTTP protocol, but only transfer JSON values.
 
+<img src="./doc/concept.png" width="900">
 
+On the server side, you **define a function which handles requests and returns result**. On the client side, you just **make request and get results synchronously**. Both requests and responses are wildcard JSON values (null, boolean, number, string, object, and array).
 
+ProcBridge has been **implemented in Java, Python, and Node.js**. If you want to connect two processes and HTTP & RPC are too heavy for your scenario, then ProcBridge will be an ideal choice.
 
-```
-
-```
-
-
-
-# 2. Instructions
+# 2. Instructions & Example
 
 Please go to sub-repos for more information.
 
@@ -31,8 +29,11 @@ Please go to sub-repos for more information.
 - ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
 - ⚠️ **Go** - not yet supported
 
+# 3. Protocol Design
 
+<img src="./doc/protocol.png" width="450">
 
+Both request and response are encoded into **ProcBridge Packets**. Those binary packets are sent over TCP socket directly. Talk is cheap, please read [Python implementation](https://github.com/gongzhang/procbridge-python/blob/master/procbridge/protocol.py) to fully understand the protocol design.
 
 
 
