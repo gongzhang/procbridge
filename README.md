@@ -4,6 +4,7 @@
 <img src="https://img.shields.io/pypi/pyversions/procbridge.svg"/>
 <img src="https://img.shields.io/badge/java-8-brightgreen.svg"/>
 <img src="https://img.shields.io/badge/node.js-8-red.svg"/>
+<img src="https://img.shields.io/badge/swift-5-orange"/>
 </p>
 
 # 1. Introduction
@@ -23,6 +24,7 @@ Please go to sub-repos for more information.
 - ✅ **Java** - [gongzhang/procbridge-java](https://github.com/gongzhang/procbridge-java)
 - ✅ **Python** - [gongzhang/procbridge-python](https://github.com/gongzhang/procbridge-python)
 - ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
+- ✅ **Swift** - [royalstream/procbridge-swift](https://github.com/royalstream/procbridge-swift)
 - ⚠️ **Go** - not yet supported
 
 # 3. Protocol Design

@@ -7,3 +7,6 @@
 [submodule "nodejs"]
 	path = nodejs
 	url = https://github.com/gongzhang/procbridge-nodejs.git
+[submodule "swift"]
+	path = swift
+	url = https://github.com/royalstream/procbridge-swift.git
