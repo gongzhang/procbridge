@@ -10,3 +10,6 @@
 [submodule "swift"]
 	path = swift
 	url = https://github.com/royalstream/procbridge-swift.git
+[submodule "csharp"]
+	path = csharp
+	url = https://github.com/IXI01/procbridge-csharp.git

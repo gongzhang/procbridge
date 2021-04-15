@@ -15,7 +15,7 @@ ProcBridge is a super-lightweight IPC (Inter-Process Communication) protocol ove
 
 On the server side, you **define a function which handles requests and returns result**. On the client side, you just **make request and get results synchronously**. Both requests and responses are wildcard JSON values (null, boolean, number, string, object, and array).
 
-ProcBridge has been **implemented in Java, Python, and Node.js**. If you want to connect two processes and HTTP & RPC are too heavy for your scenario, then ProcBridge will be an ideal choice.
+ProcBridge has been **implemented in Java, Python, Node.js, Swift, and C#**. If you want to connect two processes and HTTP & RPC are too heavy for your scenario, then ProcBridge will be an ideal choice.
 
 # 2. Instructions & Example
 
@@ -25,6 +25,7 @@ Please go to sub-repos for more information.
 - ✅ **Python** - [gongzhang/procbridge-python](https://github.com/gongzhang/procbridge-python)
 - ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
 - ✅ **Swift** - [royalstream/procbridge-swift](https://github.com/royalstream/procbridge-swift)
+- ✅ **C#** - [IXI01/procbridge-csharp](https://github.com/IXI01/procbridge-csharp)
 - ⚠️ **Go** - not yet supported
 
 # 3. Protocol Design
