@@ -25,6 +25,7 @@ Please go to sub-repos for more information.
 - ✅ **Python** - [gongzhang/procbridge-python](https://github.com/gongzhang/procbridge-python)
 - ✅ **Node.js** - [gongzhang/procbridge-nodejs](https://github.com/gongzhang/procbridge-nodejs)
 - ✅ **Swift** - [royalstream/procbridge-swift](https://github.com/royalstream/procbridge-swift)
+  - Alternative: [gongzhang/procbridge-swift](https://github.com/gongzhang/procbridge-swift) (WIP but supported Unix domain socket already)
 - ✅ **C#** - [IXI01/procbridge-csharp](https://github.com/IXI01/procbridge-csharp)
 - ⚠️ **Go** - not yet supported
 
